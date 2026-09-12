@@ -10,6 +10,28 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: fraud_detection_db
+          POSTGRES_USER: fraud_user
+          POSTGRES_PASSWORD: fraud_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U fraud_user -d fraud_detection_db"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_NAME: fraud_detection_db
+      DB_USER: fraud_user
+      DB_PASSWORD: fraud_password
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -23,6 +45,32 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+
+      - name: Create database schema
+        run: |
+          PGPASSWORD=fraud_password psql \
+            -h localhost \
+            -U fraud_user \
+            -d fraud_detection_db \
+            -f sql/ddl/001_create_transaction_tables.sql
+
+          PGPASSWORD=fraud_password psql \
+            -h localhost \
+            -U fraud_user \
+            -d fraud_detection_db \
+            -f sql/ddl/002_add_risk_decision.sql
+
+          PGPASSWORD=fraud_password psql \
+            -h localhost \
+            -U fraud_user \
+            -d fraud_detection_db \
+            -f sql/ddl/003_add_rejected_transaction_uniqueness.sql
+
+          PGPASSWORD=fraud_password psql \
+            -h localhost \
+            -U fraud_user \
+            -d fraud_detection_db \
+            -f sql/ddl/004_create_pipeline_audit.sql
 
       - name: Run tests with coverage
         run: |
