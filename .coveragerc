@@ -1,0 +1,12 @@
+[run]
+source = src
+omit =
+    */test_*.py
+    src/ingestion/generate_transactions.py
+    */__init__.py
+    */__pycache__/*
+
+[report]
+exclude_lines =
+    pragma: no cover
+    if __name__ == .__main__.:
