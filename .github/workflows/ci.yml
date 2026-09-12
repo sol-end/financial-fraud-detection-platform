@@ -73,5 +73,11 @@ jobs:
             -f sql/ddl/004_create_pipeline_audit.sql
 
       - name: Run tests with coverage
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: fraud_detection_db
+          DB_USER: fraud_user
+          DB_PASSWORD: fraud_password
         run: |
           pytest --cov=src --cov-report=term-missing
